@@ -4,3 +4,4 @@ wasm-game-of-life/bin/
 wasm-game-of-life/pkg/
 wasm-game-of-life/wasm-pack.log
 wasm-game-of-life/target/
+wasm-game-of-life/www/node_modules/
