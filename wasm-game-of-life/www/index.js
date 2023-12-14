@@ -5,6 +5,7 @@ const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
+let animationId = null;
 
 // Construct the universe, and get its width and height.
 const universe = Universe.new();
@@ -14,6 +15,7 @@ const height = universe.height();
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
 const canvas = document.getElementById("game-of-life-canvas");
+const playPauseButton = document.getElementById("play-pause");
 canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
@@ -68,15 +70,34 @@ const drawCells = () => {
   ctx.stroke();
 };
 
-const renderLoop = () => {
-  universe.tick();
-
-  drawGrid();
-  drawCells();
-
-  requestAnimationFrame(renderLoop);
+const play = () => {
+  playPauseButton.textContent = "⏸";
+  renderLoop();
 };
 
-drawGrid();
+const pause = () => {
+  playPauseButton.textContent = "▶";
+  cancelAnimationFrame(animationId);
+  animationId = null;
+};
+
+playPauseButton.addEventListener("click", event => {
+  if (animationId === null) {
+    play();
+  } else {
+    pause();
+  }
+});
+
+const renderLoop = () => {
+  universe.tick();
+  animationId = requestAnimationFrame(renderLoop);
+  // drawGrid();
+  drawCells();
+
+  // requestAnimationFrame(renderLoop);
+};
+
+// drawGrid();
 drawCells();
-requestAnimationFrame(renderLoop);
+pause();
