@@ -7,6 +7,7 @@
     "create-wasm-app": ".bin/create-wasm-app.js"
   },
   "scripts": {
+    "build-wasm": "sh build_wasm.sh",
     "build": "webpack --config webpack.config.js",
     "start": "webpack-dev-server"
   },

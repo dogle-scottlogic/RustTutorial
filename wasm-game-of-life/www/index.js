@@ -2,24 +2,55 @@ import { memory } from "wasm-game-of-life/wasm_game_of_life_bg.wasm";
 import { Universe, Cell } from "wasm-game-of-life";
 
 const CELL_SIZE = 5; // px
-const GRID_COLOR = "#CCCCCC";
-const DEAD_COLOR = "#FFFFFF";
+let GRID_WIDTH = 64;
+let GRID_HEIGHT = 64;
+let GRID_COLOR = "#000000";
+const DEAD_COLOR = "#4B4E53";
 const ALIVE_COLOR = "#000000";
 let animationId = null;
+let showGrid = false;
+let showFps = false;
+let random = false;
 
 // Construct the universe, and get its width and height.
-const universe = Universe.new();
-const width = universe.width();
-const height = universe.height();
+let universe = Universe.new(GRID_WIDTH, GRID_HEIGHT, random);
+let width = universe.width();
+let height = universe.height();
 
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
 const canvas = document.getElementById("game-of-life-canvas");
 const playPauseButton = document.getElementById("play-pause");
+const toggleGridButton = document.getElementById("toggle-grid");
+const toggleStatsButton = document.getElementById("toggle-fps");
+const fps_element = document.getElementById("fps");
+const heightInput = document.getElementById("height-input");
+const widthInput = document.getElementById("width-input");
+const newRandom = document.getElementById("random");
+heightInput.placeholder = height;
+widthInput.placeholder = width;
+
 canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
-const ctx = canvas.getContext("2d");
+let ctx = canvas.getContext("2d");
+
+function debounce(func, timeout = 300){
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
+const redrawUniverse = debounce(() => {
+  universe = Universe.new(GRID_WIDTH, GRID_HEIGHT, random);
+  width = universe.width();
+  height = universe.height();
+  canvas.height = (CELL_SIZE + 1) * height + 1;
+  canvas.width = (CELL_SIZE + 1) * width + 1;
+  drawCells();
+});
 
 const drawGrid = () => {
   ctx.beginPath();
@@ -58,7 +89,9 @@ canvas.addEventListener("click", (event) => {
 
   universe.toggle_cell(row, col);
 
-  drawGrid();
+  if (showGrid) {
+    drawGrid();
+  }
   drawCells();
 });
 
@@ -69,7 +102,10 @@ const drawCells = () => {
   ctx.beginPath();
 
   // Alive cells.
-  ctx.fillStyle = ALIVE_COLOR;
+  const grd = ctx.createLinearGradient(0, 0, width * 8, 0);
+  grd.addColorStop(0, "red");
+  grd.addColorStop(1, "black")
+  ctx.fillStyle = grd;
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
@@ -118,12 +154,48 @@ const pause = () => {
   animationId = null;
 };
 
-playPauseButton.addEventListener("click", (event) => {
+playPauseButton.addEventListener("click", () => {
   if (animationId === null) {
     play();
   } else {
     pause();
   }
+});
+
+toggleGridButton.addEventListener("click", () => {
+  showGrid = !showGrid;
+  if (showGrid) {
+    drawGrid();
+  } else {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawCells();
+  }
+});
+
+toggleStatsButton.addEventListener("click", () => {
+  showFps = !showFps;
+  if (showFps) {
+    fps_element.style.display = "block";
+    fps.render();
+  } else {
+    fps_element.style.display = "none";
+  }
+});
+
+heightInput.addEventListener("change", (event) => {
+  GRID_HEIGHT = Number(event.target.value);
+  redrawUniverse();
+});
+
+widthInput.addEventListener("change", (event) => {
+  GRID_WIDTH = Number(event.target.value);
+  redrawUniverse();
+});
+
+newRandom.addEventListener("click", () => {
+  random = true;
+  universe = Universe.new(GRID_WIDTH, GRID_HEIGHT, random);
+  drawCells();
 });
 
 const renderLoop = () => {
@@ -132,15 +204,12 @@ const renderLoop = () => {
     universe.tick();
   // }
   animationId = requestAnimationFrame(renderLoop);
-  // drawGrid();
   drawCells();
-
-  // requestAnimationFrame(renderLoop);
 };
 
 const fps = new (class {
-  constructor() {
-    this.fps = document.getElementById("fps");
+  constructor(fps) {
+    this.fps = fps
     this.frames = [];
     this.lastFrameTimeStamp = performance.now();
   }
@@ -179,8 +248,7 @@ min of last 100 = ${Math.round(min)}
 max of last 100 = ${Math.round(max)}
 `.trim();
   }
-})();
+})(fps_element);
 
-// drawGrid();
 drawCells();
 pause();

@@ -54,20 +54,31 @@ pub struct Universe {
 /// Public methods, exported to JavaScript.
 #[wasm_bindgen]
 impl Universe {
-    pub fn new() -> Universe {
+    pub fn new(width: u32, height: u32, random_start: bool) -> Universe {
         utils::set_panic_hook();
-        let width = 64;
-        let height = 64;
+        let cells;
 
-        let cells = (0..width * height)
-            .map(|i| {
-                if i % 2 == 0 || i % 7 == 0 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
-            })
-            .collect();
+        if random_start {
+            cells = (0..width * height)
+                .map(|_i| {
+                    if js_sys::Math::random() < 0.5 {
+                        Cell::Alive
+                    } else {
+                        Cell::Dead
+                    }
+                })
+                .collect();
+        } else {
+            cells = (0..width * height)
+                .map(|i| {
+                    if i % 2 == 0 || i % 7 == 0 {
+                        Cell::Alive
+                    } else {
+                        Cell::Dead
+                    }
+                })
+                .collect();
+        }
 
         Universe {
             width,
@@ -77,7 +88,7 @@ impl Universe {
     }
 
     pub fn tick(&mut self) {
-        let _timer = Timer::new("Universe::tick");
+        // let _timer = Timer::new("Universe::tick");
         let mut next = self.cells.clone();
 
         for row in 0..self.height {

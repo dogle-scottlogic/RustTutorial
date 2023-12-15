@@ -5,6 +5,7 @@
     <title>Game Of Life</title>
     <style>
       body {
+        background-color: #4B4E53;
         position: absolute;
         top: 0;
         left: 0;
@@ -16,15 +17,51 @@
         justify-content: center;
       }
       #fps {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 20px;
+        border: 1px solid red;
+        padding: 10px;
         white-space: pre;
         font-family: monospace;
+      }
+      .button-box {
+        padding: 5px;
+        margin: auto;
+      }
+      .size-box {
+        margin: auto;
+      }
+      .gol {
+        display: flex;
+        flex-direction: column;
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      canvas {
+        margin: auto;
       }
     </style>
   </head>
   <body>
-    <button id="play-pause"></button>
-    <div id="fps"></div>
-    <canvas id="game-of-life-canvas"></canvas>
+    <h1>Conway's Game of Life</h1>
+    <div class="gol">
+      <div class="button-box">
+        <button id="toggle-grid">Toggle Grid</button>
+        <button id="play-pause"></button>
+        <button id="toggle-fps">Toggle Stats</button>
+        <button id="random">New Random</button>
+      </div>
+      <div class="size-box">
+        <span><label>Height:</label><input id="height-input" type="number"></span>
+        <span><label>Width:</label><input id="width-input" type="number"></span>
+      </div>
+      <div id="fps"></div>
+      <canvas id="game-of-life-canvas"></canvas>
+    </div>
     <script src="./bootstrap.js"></script>
   </body>
 </html>
